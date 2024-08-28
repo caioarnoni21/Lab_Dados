@@ -1,52 +1,88 @@
-#include <stdio.h>
-#define LEN 10
+#include #include
+#define LEN 100
 
 typedef struct {
-  int values[LEN];
-  int n;
-} Lista;
+char data[LEN];
+int head;
+int tail;
+int qtde;
+} Queue;
 
-int is_full(Lista *lista){
-  return lista -> n == LEN;
-}
+int is_full(Queue *queue) { return queue->qtde == LEN; }
 
-int is_empty(Lista *lista){
-  return lista->n == 0;
-}
+int is_empty(Queue *queue) { return queue->qtde == 0; }
 
-int buscar(Lista *lista, int valor){
-  int idx = 0;
-  while(idx < lista -> n && lista -> values [idx] <= valor )
-    idx++;
-  return idx;
-}
-
-void mover(Lista *lista, int idx){
-  for(int i = lista ->n; i > idx; i --)    
-    lista -> values[i] = lista -> values[i - 1];
-}
-
-int inserir(Lista *lista, int valor){
-  if(is_full(lista))
-    return 0;
-  int idx = 0;
-  if(!is_empty(lista)){
-    idx = buscar(lista, valor);
-    mover(lista, idx);
-    
-    
+int enqueue(Queue *queue, char caracter) {
+  if (!is_full(queue)) {
+    queue->data[queue->tail % LEN] = caracter;
+    queue->tail++;
+    queue->qtde++;
+    return 1;
   }
-  lista -> values[idx] = valor;
-  lista-> n ++;
-  return 1;
-}
 
-
-  
-}
-
-int main(void) {
-  
   return 0;
 }
 
+char dequeue(Queue *queue) {
+  if (!is_empty(queue)) {
+    int value = queue->data[queue->head % LEN];
+    queue->head++;
+    queue->qtde--;
+    return value;
+  }
+
+  return -1;
+}
+
+void show(Queue *queue) {
+  for (int i = queue->head; i < queue->tail; i++) {
+    printf("%c ", queue->data[i % LEN]);
+  }
+}
+
+Queue *create_queue() {
+    Queue *queue = malloc(sizeof(Queue));
+    queue->head = 0;
+    queue->tail = 0;
+    queue->qtde = 0;
+
+  return queue;
+}
+
+int main(void) {
+  Queue *queue = create_queue();
+  Queue *parenteses = create_queue();
+
+  char s[LEN];
+
+  fgets(s, sizeof(s), stdin);
+
+  int certo = 1;
+
+for (int i = 0; s[i] != '\0'; i++) {
+
+  enqueue(queue, s[i]);
+}
+
+for (int i = 0; s[i] != '\0'; i++) {
+  dequeue(queue);
+
+if (s[i] == '(') {
+enqueue(parenteses, s[i]);
+} else if (s[i] == ')') {
+int res = dequeue(parenteses);
+certo = res != -1;
+}
+if (certo) {
+show(queue);
+}
+}
+
+if (certo && !parenteses->qtde) {
+printf("correto");
+} else {
+printf("incorreto");
+}
+
+return 0;
+}
