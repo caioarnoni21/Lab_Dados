@@ -1,51 +1,78 @@
 #include <stdio.h>
-#define LEN 10
+#include <stdlib.h>
 
-typedef struct {
-  int values[LEN];
-  int n;
-} Lista;
+typedef struct Celula {
+  int valor;
+  struct Celula *proximo;
+} Celula;
 
-int is_full(Lista *lista){
-  return lista -> n == LEN;
+typedef struct{
+  int qtde; 
+  Celula *primeiro; 
+} LDE;
+
+LDE *cria_LDE(){
+  LDE *lde = malloc(sizeof(LDE));
+  lde -> primeiro = NULL;
+  lde -> qtde = 0;
+    return lde;
 }
 
-int is_empty(Lista *lista){
-  return lista->n == 0;
+Celula *cria_Celula(int valor){
+  Celula * celula = malloc(sizeof(Celula));
+  celula -> proximo = NULL;
+  celula -> valor = valor;
+  return celula;
 }
 
-int buscar(Lista *lista, int valor){
-  int idx = 0;
-  while(idx < lista -> n && lista -> values [idx] <= valor )
-    idx++;
-  return idx;
-}
-
-void mover(Lista *lista, int idx){
-  for(int i = lista ->n; i > idx; i --)    
-    lista -> values[i] = lista -> values[i - 1];
-}
-
-int inserir(Lista *lista, int valor){
-  if(is_full(lista))
-    return 0;
-  int idx = 0;
-  if(!is_empty(lista)){
-    idx = buscar(lista, valor);
-    mover(lista, idx);
-    
-    
+void inserir(LDE *lde, int valor){
+  Celula * novo = cria_Celula(valor);
+  if(lde -> qtde == 0){
+    lde -> primeiro = novo;
+    lde -> qtde ++;
+  } else {
+    Celula * atual = lde -> primeiro;
+    Celula *anterior = NULL;
+    while (atual != NULL && atual -> valor < valor){
+      anterior = atual;
+      atual = atual -> proximo;
+    }
+    if(anterior == NULL && atual != NULL){
+      novo -> proximo = atual;
+      lde -> primeiro;
+      lde ->qtde++;
+    }
+    if(anterior != NULL && atual == NULL){
+      anterior -> proximo = novo;
+      lde ->qtde++;
+    }
+    if(anterior != NULL && atual != NULL){
+      anterior -> proximo = novo;
+      novo -> proximo = atual;
+      lde ->qtde++;
+    }
   }
-  lista -> values[idx] = valor;
-  lista-> n ++;
-  return 1;
 }
 
-
-  
+void mostrar(LDE*lde){
+  Celula *atual = lde -> primeiro;
+  while(atual != NULL){
+    printf("%d", atual-> valor);
+    atual = atual -> proximo;
+  }
+  printf("\n");
 }
 
-int main(void) {
-  
+int main(void){
+  int valores[] = {0 , 9, 8, 7, 6, 5, 4, 3, 2, 1,};
+  int tamanho = sizeof(valores) / sizeof(int);
+  LDE *lde = cria_LDE();
+  for(int i = 0; i < tamanho; i++){
+    inserir(lde, valores[i]);
+    mostrar(lde);
+  }
   return 0;
 }
+
+
+
