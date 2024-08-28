@@ -1,89 +1,88 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define LEN 100
+#define LEN 10
 
 typedef struct {
-  char data[LEN];
-  int head;
-  int tail;
+  int valores[LEN];
   int qtde;
-} Queue;
+} heap;
 
-int is_full(Queue *queue) { return queue->qtde == LEN; }
+int filho_esq(int pai) { return (2 * pai) + 1; }
 
-int is_empty(Queue *queue) { return queue->qtde == 0; }
+int filho_dir(int pai) { return (2 * pai) + 2; }
 
-int enqueue(Queue *queue, char caracter) {
-  if (!is_full(queue)) {
-    queue->data[queue->tail % LEN] = caracter;
-    queue->tail++;
-    queue->qtde++;
-    return 1;
+int pai(int filho) { return (filho - 1) / 2; }
+
+int ultimo_pai(heap *h) { return (h->qtde / 2) - 1; }
+
+void peneirar(heap *h, int pai) {
+  int esq = filho_esq(pai);
+  int dir = filho_dir(pai);
+  int maior = pai;
+
+  if (esq < h->qtde && h->valores[esq] > h->valores[maior]) {
+    maior = esq;
   }
 
-  return 0;
-}
-
-char dequeue(Queue *queue) {
-  if (!is_empty(queue)) {
-    int value = queue->data[queue->head % LEN];
-    queue->head++;
-    queue->qtde--;
-    return value;
+  if (dir < h->qtde && h->valores[dir] > h->valores[maior]) {
+    maior = dir;
   }
 
-  return -1;
-}
-
-void show(Queue *queue) {
-  for (int i = queue->head; i < queue->tail; i++) {
-    printf("%c ", queue->data[i % LEN]);
+  if (maior!= pai) {
+    int tmp = h->valores[pai];
+    h->valores[pai] = h->valores[maior];
+    h->valores[maior] = tmp;
+    peneirar(h, maior);
   }
 }
 
-Queue *create_queue() {
-  Queue *queue = malloc(sizeof(Queue));
-  queue->head = 0;
-  queue->tail = 0;
-  queue->qtde = 0;
+void construir(heap *h) {
+  for (int i = ultimo_pai(h); i >= 0; i--) {
+    peneirar(h, i);
+  }
+}
 
-  return queue;
+void inserir(heap *h, int valor) {
+  h->valores[h->qtde] = valor;
+  h->qtde++;
+  int atual = h->qtde - 1;
+  int pai_indice = pai(atual);
+
+  while (atual > 0 && h->valores[atual] > h->valores[pai_indice]) {
+    int tmp = h->valores[atual];
+    h->valores[atual] = h->valores[pai_indice];
+    h->valores[pai_indice] = tmp;
+    atual = pai_indice;
+    pai_indice = pai(atual);
+  }
+}
+
+void remover(heap *h) {
+  h->valores[0] = h->valores[h->qtde - 1];
+  h->qtde--;
+  peneirar(h, 0);
+}
+
+void mostrar(heap *h) {
+  for (int i = 0; i < h->qtde; i++) {
+    printf("%d ", h->valores[i]);
+  }
+  printf("\n");
 }
 
 int main(void) {
-  Queue *queue = create_queue();
-  Queue *parenteses = create_queue();
-
-  char s[LEN];
-
-  fgets(s, sizeof(s), stdin);
-
-  int certo = 1;
-
-  for (int i = 0; s[i] != '\0'; i++) {
-
-    enqueue(queue, s[i]);
+  heap *h = malloc(sizeof(heap));
+  int valor;
+  h->qtde = 0;
+  for (int i = 0; i < LEN; i++) {
+    scanf("%d", &valor);
+    inserir(h, valor);
+    mostrar(h);
   }
-
-  for (int i = 0; s[i] != '\0'; i++) {
-    dequeue(queue);
-
-    if (s[i] == '(') {
-      enqueue(parenteses, s[i]);
-    } else if (s[i] == ')') {
-      int res = dequeue(parenteses);
-      certo = res != -1;
-    }
-    if (certo) {
-      show(queue);
-    }
-  }
-
-  if (certo && !parenteses->qtde) {
-    printf("correto");
-  } else {
-    printf("incorreto");
+  for (int i = 0; i < LEN; i++) {
+    remover(h);
+    mostrar(h);
   }
 
   return 0;
