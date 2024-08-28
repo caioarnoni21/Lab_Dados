@@ -1,51 +1,96 @@
 #include <stdio.h>
-#define LEN 10
+#include <stdlib.h>
 
-typedef struct {
-  int values[LEN];
-  int n;
+typedef struct Celula {
+    int valor;
+    struct Celula *proximo;
+} Celula;
+
+typedef struct Lista {
+    int qtde;
+    Celula *primeiro;
 } Lista;
 
-int is_full(Lista *lista){
-  return lista -> n == LEN;
+void inserir(Lista *l, int valor) {
+    Celula *novo = malloc(sizeof(Celula));
+    novo->valor = valor;
+    novo->proximo = NULL;
+
+    if (l->primeiro == NULL) {
+        l->primeiro = novo;
+    } else {
+        Celula *atual = l->primeiro;
+        Celula *anterior = NULL;
+        while (atual != NULL && atual->valor <= valor) {
+            anterior = atual;
+            atual = atual->proximo;
+        }
+        if (anterior == NULL) {
+            novo->proximo = l->primeiro;
+            l->primeiro = novo;
+        } else {
+            if (atual == NULL) {
+                anterior->proximo = novo;
+            } else {
+                novo->proximo = atual;
+                anterior->proximo = novo;
+        
+            }
+        }
+    }
+    l->qtde++;
 }
 
-int is_empty(Lista *lista){
-  return lista->n == 0;
+void remover(Lista *l, int valor) {
+    Celula *atual = l->primeiro;
+    Celula *anterior = NULL;
+
+    while (atual != NULL && atual->valor != valor) {
+        anterior = atual;
+        atual = atual->proximo;
+    }
+
+    if (atual == NULL) {
+        return;
+    }
+    if (anterior == NULL) {
+        l->primeiro = atual->proximo;
+    } else {
+        anterior->proximo = atual->proximo;
+    }
+    free(atual);
+    l->qtde--;
 }
 
-int buscar(Lista *lista, int valor){
-  int idx = 0;
-  while(idx < lista -> n && lista -> values [idx] <= valor )
-    idx++;
-  return idx;
+Lista *inicializa_lista() {
+    Lista *l = malloc(sizeof(Lista));
+    l->primeiro = NULL;
+    l->qtde = 0;
+    return l;
 }
 
-void mover(Lista *lista, int idx){
-  for(int i = lista ->n; i > idx; i --)    
-    lista -> values[i] = lista -> values[i - 1];
-}
-
-int inserir(Lista *lista, int valor){
-  if(is_full(lista))
-    return 0;
-  int idx = 0;
-  if(!is_empty(lista)){
-    idx = buscar(lista, valor);
-    mover(lista, idx);
-    
-    
-  }
-  lista -> values[idx] = valor;
-  lista-> n ++;
-  return 1;
-}
-
-
-  
+void imprimir(Lista *l) {
+    Celula *atual = l->primeiro;
+    while (atual != NULL) {
+        printf("%d ", atual->valor);
+        atual = atual->proximo;
+    }
+    printf("\n");
 }
 
 int main(void) {
-  
-  return 0;
+    Lista *l = inicializa_lista();
+    int valores[] = {2, 1, 0, 9, 3, 8, 5, 7, 6, 4};
+    // inserção
+    for (int i = 0; i < 10; i++) {
+        inserir(l, valores[i]);
+        imprimir(l);
+    }
+    // remoção
+    for (int i = 0; i < 10; i++) {
+        remover(l, valores[i]);
+        imprimir(l);
+    }
+
+    return 0;
 }
